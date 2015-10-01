@@ -6,6 +6,7 @@ use yii\base\NotSupportedException;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 use yii\web\IdentityInterface;
+use yii\web\UploadedFile;
 
 /**
  * User model
@@ -52,6 +53,7 @@ class User extends ActiveRecord implements IdentityInterface
         return [
             ['status', 'default', 'value' => self::STATUS_ACTIVE],
             ['status', 'in', 'range' => [self::STATUS_ACTIVE, self::STATUS_DELETED]],
+          //  ['avatar', 'file', 'skipOnEmpty' => false, 'extensions' => 'png, jpg'],
         ];
     }
 
@@ -184,5 +186,21 @@ class User extends ActiveRecord implements IdentityInterface
     public function removePasswordResetToken()
     {
         $this->password_reset_token = null;
+    }
+
+    /**
+     * Updates the current avatar.
+     * @param $avatar_name string the name that the file will have
+     * @return bool returns true if it managed to save correctly the new avatar.
+     */
+    public function upload($avatar_name)
+    {
+        var_dump($this->validate(['avatar']));
+        if ($this->validate()){
+            $this->avatar->saveAs('images/avatar/' . $avatar_name );
+            return true;
+        } else {
+            return false;
+        }
     }
 }

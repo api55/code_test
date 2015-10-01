@@ -29,5 +29,11 @@ return [
             'errorAction' => 'site/error',
         ],
     ],
+    'modules'=>array(
+        'gii'=>array(
+            'class'=>'system.gii.GiiModule',
+            'password'=>'123456',
+        ),
+    ),
     'params' => $params,
 ];

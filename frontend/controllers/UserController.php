@@ -8,6 +8,7 @@ use yii\data\ActiveDataProvider;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\web\UploadedFile;
 
 /**
  * UserController implements the CRUD actions for User model.
@@ -80,9 +81,31 @@ class UserController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
+        $original_name = $model->avatar;
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+
+        // Upload new avatar
+        $model->avatar = UploadedFile::getInstance($model, 'avatar');
+        $avatar_path ='';
+        if (is_object($model->avatar)){
+            $avatar_name = uniqid() . $model->avatar->extension;
+            if (!empty($original_name)){
+                $avatar_name = $original_name;
+            }
+                if (!$model->upload($avatar_name)){
+                    return $this->render('update', [
+                        'model' => $model,
+                    ]);
+                } else {
+                    $avatar_path = $avatar_name;
+                }
+        }
+
+        if ($model->load(Yii::$app->request->post()) ) {
+            $model->avatar = $avatar_path;
+            if ($model->save()) {
+                return $this->redirect(['view', 'id' => $model->id]);
+            }
         } else {
             return $this->render('update', [
                 'model' => $model,
@@ -98,7 +121,16 @@ class UserController extends Controller
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+        $model = $this->findModel($id);
+        $model->status = $model->STATUS_DELETED;
+        if ($model->save()){
+            Yii::$app->user->logout();
+            return $this->goHome();
+        } else {
+            return $this->render('update', [
+                'model' => $model,
+            ]);
+        }
 
         return $this->redirect(['index']);
     }

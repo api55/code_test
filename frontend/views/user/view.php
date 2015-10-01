@@ -7,7 +7,7 @@ use yii\widgets\DetailView;
 /* @var $model common\models\User */
 
 $this->title = $model->username;
-$avatar_url = 'images/avatar/' . ((empty($model->avatar)) ? 'default-200.png':'$model->avatar') ;
+$avatar_url = 'images/avatar/' . ((empty($model->avatar)) ? 'default-200.png': $model->avatar) ;
 ?>
 <div class="user-view">
     <?php

@@ -10,9 +10,12 @@ use yii\widgets\ActiveForm;
 
 <div class="user-form">
 
-    <?php $form = ActiveForm::begin(); ?>
+    <?php $form = ActiveForm::begin(['options' => ['enctype'=>'multipart/form-data']]); ?>
 
-    <?= $form->field($model, 'status')->textInput() ?>
+    <?= $form->field($model, 'email')->input('email') ?>
+    <?= $form->field($model, 'password')->passwordInput(['value'=>'']) ?>
+    <?= $form->field($model, 'mobile_num')->input([])->label('Mobile Number') ?>
+    <?= $form->field($model, 'avatar')->fileInput()->label('Choose a new avatar') ?>
 
     <div class="form-group">
         <?= Html::submitButton($model->isNewRecord ? 'Create' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
