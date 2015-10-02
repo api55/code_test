@@ -7,14 +7,22 @@ class m151002_115707_result extends Migration
 {
     public function up()
     {
+        $tableOptions = null;
+        if ($this->db->driverName === 'mysql') {
+            // http://stackoverflow.com/questions/766809/whats-the-difference-between-utf8-general-ci-and-utf8-unicode-ci
+            $tableOptions = 'CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE=InnoDB';
+        }
 
+	$this->addColumn('user','avatar', 'string null');
+	$this->addColumn('user','mobile_num', 'string(32) null');
     }
 
     public function down()
     {
-        echo "m151002_115707_result cannot be reverted.\n";
+	$this->dropColumn('user','avatar');
+	$this->dropColumn('user', 'mobile_num');
 
-        return false;
+        return true;
     }
 
     /*
