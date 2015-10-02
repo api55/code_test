@@ -24,6 +24,10 @@ use yii\web\UploadedFile;
  */
 class User extends ActiveRecord implements IdentityInterface
 {
+    public $old_password;
+    public $new_password;
+    public $repeat_password;
+
     const STATUS_DELETED = 0;
     const STATUS_ACTIVE = 10;
 
@@ -53,7 +57,17 @@ class User extends ActiveRecord implements IdentityInterface
         return [
             ['status', 'default', 'value' => self::STATUS_ACTIVE],
             ['status', 'in', 'range' => [self::STATUS_ACTIVE, self::STATUS_DELETED]],
-          //  ['avatar', 'file', 'skipOnEmpty' => false, 'extensions' => 'png, jpg'],
+            ['avatar', 'file', 'skipOnEmpty' => true, 'extensions' => 'png, jpg'],
+            ['mobile_num', 'phoneNumber', 'skipOnEmpty' => true],
+            ['repeat_password',  'required', 'on'=>['changePass', 'create']],
+            ['old_password',  'required', 'on'=>'changePass'],
+            ['new_password',  'required', 'on'=>['changePass', 'create']],
+            ['old_password', 'checkPass', 'on'=>'changePass'],
+            ['repeat_password', 'compare', 'compareAttribute'=>'new_password', 'on'=>['changePass', 'create']],
+            ['email', 'email','message'=>"Not a valid email"],
+            ['email', 'required'],
+            ['username', 'required'],
+            ['username', 'unique'],
         ];
     }
 
@@ -195,12 +209,64 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public function upload($avatar_name)
     {
-        var_dump($this->validate(['avatar']));
+
         if ($this->validate()){
-            $this->avatar->saveAs('images/avatar/' . $avatar_name );
+            // resize the image
+            $size = getimagesize($this->avatar->tempName);
+            $width = $size[0];
+            $height = $size[1];
+
+            $ratio = max([$width, $height]) / 200.0;
+            $width /= $ratio;
+            $height /= $ratio;
+
+            $new_im =  imagecreatetruecolor($width, $height);
+            if($this->avatar->extension == "png"){
+                $curr_im = imagecreatefrompng($this->avatar->tempName);
+            } elseif ($this->avatar->extension == "jpg"){
+                $curr_im = imagecreatefromjpeg($this->avatar->tempName);
+            } else return false;
+
+            imagecopyresized($new_im, $curr_im, 0, 0, 0, 0, $width, $height, $size[0], $size[1]);
+
+            // save the image
+            if($this->avatar->extension == "png"){
+                imagepng($new_im, 'images/avatar/' . $avatar_name);
+            } elseif ($this->avatar->extension == "jpg"){
+                imagejpeg($new_im, 'images/avatar/' . $avatar_name);
+                $curr_im = imagecreatefromjpeg($this->avatar->tempName);
+            } else return false;
             return true;
         } else {
             return false;
         }
     }
+
+    /**
+     * Checks if the old password is correct
+     * @param string $attribute the name of the attribute to be validated
+     * @param array $params options specified in the validation rule
+     */
+    public function checkPass($attribute, $params)
+    {
+
+        if (!$this->validatePassword($this->old_password))
+            $this->addError($attribute, 'Old password is incorrect.');
+
+    }
+
+    /**
+     * Validates the mobile number.
+     * @param string $attribute the name of the attribute to be validated
+     * @param array $params options specified in the validation rule
+     */
+    public function phoneNumber($attribute, $params)
+    {
+        if(preg_match("@\+?([0-9\s]{6,26})@",$this->$attribute) === 0)
+        {
+            $this->addError($attribute,
+                'Incorrect mobile number, please use the following characters: "0123456789+"' );
+        }
+    }
+
 }

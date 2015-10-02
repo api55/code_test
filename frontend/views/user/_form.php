@@ -10,15 +10,17 @@ use yii\widgets\ActiveForm;
 
 <div class="user-form">
 
-    <?php $form = ActiveForm::begin(['options' => ['enctype'=>'multipart/form-data']]); ?>
-
-    <?= $form->field($model, 'email')->input('email') ?>
-    <?= $form->field($model, 'password')->passwordInput(['value'=>'']) ?>
-    <?= $form->field($model, 'mobile_num')->input([])->label('Mobile Number') ?>
-    <?= $form->field($model, 'avatar')->fileInput()->label('Choose a new avatar') ?>
-
+    <?php $form = ActiveForm::begin(['options' => ['enctype' => 'multipart/form-data']]); ?>
+    <div class="form-group col-lg-5">
+        <?= $form->field($model, 'email')->input('email') ?>
+        <?= $form->field($model, 'mobile_num')->input([])->label('Mobile Number') ?>
+        <?= $form->field($model, 'old_password')->passwordInput(['value' => '']) ?>
+        <?= $form->field($model, 'new_password')->passwordInput(['value' => '']) ?>
+        <?= $form->field($model, 'repeat_password')->passwordInput(['value' => '']) ?>
+        <?= $form->field($model, 'avatar')->fileInput()->label('Choose a new avatar') ?>
+    </div>
     <div class="form-group">
-        <?= Html::submitButton($model->isNewRecord ? 'Create' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
+        <?= Html::submitButton($model->isNewRecord ? 'Create' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success pull-right' : 'btn btn-primary pull-right']) ?>
     </div>
 
     <?php ActiveForm::end(); ?>

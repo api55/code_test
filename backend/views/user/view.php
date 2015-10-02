@@ -30,7 +30,7 @@ $avatar_url = 'images/avatar/' . ((empty($model->avatar)) ? 'default-200.png': $
     ];
     echo DetailView::widget($details) ?>
     <p>
-        <?php if (!Yii::$app->user->isGuest && $model->id === Yii::$app->user->identity->id){ ?>
+        <?php if (!Yii::$app->user->isGuest ){ ?>
         <?= Html::a('Edit Profile', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
         <?= Html::a('Delete Profile', ['delete', 'id' => $model->id], [
             'class' => 'btn btn-danger',

@@ -1,6 +1,6 @@
 <?php
 
-namespace frontend\controllers;
+namespace backend\controllers;
 
 use Yii;
 use common\models\User;
@@ -10,19 +10,17 @@ use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\web\UploadedFile;
 
-
 /**
  * UserController implements the CRUD actions for User model.
  */
 class UserController extends Controller
 {
-
     public function behaviors()
     {
         return [
             'access' => [
                 'class' => \yii\filters\AccessControl::className(),
-                'only' => ['update','view'],
+                'only' => ['create','index','update','view'],
                 'rules' => [
                     // allow authenticated users
                     [
@@ -72,19 +70,25 @@ class UserController extends Controller
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
      */
-    //not needed since there is a signup
-    /*    public function actionCreate()
-        {
-            $model = new User();
+    public function actionCreate()
+    {
 
-            if ($model->load(Yii::$app->request->post()) && $model->save()) {
+        $model = new User();
+        $model->scenario = 'create';
+
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            $model->setPassword($model->new_password);
+            $model->generateAuthKey();
+            if ($model->save(false)){
                 return $this->redirect(['view', 'id' => $model->id]);
-            } else {
-                return $this->render('create', [
-                    'model' => $model,
-                ]);
             }
-        }*/
+        } else {
+            Yii::$app->getSession()->setFlash('error',"Please correct the mistakes and try again later.");
+            return $this->render('create', [
+                'model' => $model,
+            ]);
+        }
+    }
 
     /**
      * Updates an existing User model.
@@ -94,13 +98,8 @@ class UserController extends Controller
      */
     public function actionUpdate($id)
     {
-
         $model = $this->findModel($id);
         //check if it is the own user
-        if (Yii::$app->user->isGuest || $model->id != Yii::$app->user->identity->id) {
-            Yii::$app->getSession()->setFlash('error',"You can't modify another user's profile");
-            return $this->goHome();
-        }
 
         $original_name = $model->avatar;
 
@@ -158,22 +157,13 @@ class UserController extends Controller
      */
     public function actionDelete($id)
     {
-
         $model = $this->findModel($id);
-        if (!Yii::$app->user->isGuest && $model->id === Yii::$app->user->identity->id) {
             $model->status = 0;
             if ($model->save()) {
-                Yii::$app->user->logout();
                 Yii::$app->getSession()->setFlash('success','Your profile was successfully deleted.');
-                return $this->goHome();
-            } else {
-                return $this->render('update', [
-                    'model' => $model,
-                ]);
+                return $this->redirect(['index']);
             }
-        }
-        Yii::$app->getSession()->setFlash('error',"You can't delete another user's profile");
-        return $this->goHome();
+        return $this->redirect(['index']);
     }
 
     /**
@@ -190,5 +180,22 @@ class UserController extends Controller
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');
         }
+    }
+
+    /**
+     * Activates an existing User model.
+     * If activation is successful, the browser will be redirected to the 'index' page.
+     * @param integer $id
+     * @return mixed
+     */
+    public function actionActivate($id)
+    {
+        $model = $this->findModel($id);
+        $model->status = 10;
+        if ($model->save()) {
+            Yii::$app->getSession()->setFlash('success','Your profile was successfully activated.');
+            return $this->redirect(['index']);
+        }
+        return $this->redirect(['index']);
     }
 }
