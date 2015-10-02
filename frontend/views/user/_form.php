@@ -18,11 +18,11 @@ use yii\widgets\ActiveForm;
         <?= $form->field($model, 'new_password')->passwordInput(['value' => '']) ?>
         <?= $form->field($model, 'repeat_password')->passwordInput(['value' => '']) ?>
         <?= $form->field($model, 'avatar')->fileInput()->label('Choose a new avatar') ?>
-    </div>
+
     <div class="form-group">
         <?= Html::submitButton($model->isNewRecord ? 'Create' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success pull-right' : 'btn btn-primary pull-right']) ?>
     </div>
-
+    </div>
     <?php ActiveForm::end(); ?>
 
 </div>
